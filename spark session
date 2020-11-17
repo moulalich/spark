@@ -1,0 +1,109 @@
+HOW TO CREATE SPARK SESION===========>
+Creating a SparkSession=======>
+
+// Create a SparkSession. No need to create SparkContext
+// You automatically get it as part of the SparkSession
+val warehouseLocation = "file:${system:user.dir}/spark-warehouse"
+val spark = SparkSession
+   .builder()
+   .appName("SparkSessionZipsExample")
+   .config("spark.sql.warehouse.dir", warehouseLocation)
+   .enableHiveSupport()
+   .getOrCreate()
+===============================================================================================================================================
+CONFIGURING SPARK’S RUNTIME PROPERTIES====>
+
+Once the SparkSession is instantiated, you can configure Spark’s runtime config properties. For example, in this code snippet, we can alter the existing runtime config options. Since configMap is a collection, you can use all of Scala’s iterable methods to access the data.
+
+//set new runtime options
+spark.conf.set("spark.sql.shuffle.partitions", 6)
+spark.conf.set("spark.executor.memory", "2g")
+//get all settings
+val configMap:Map[String, String] = spark.conf.getAll()
+===============================================================================================================================================
+ACCESSING CATALOG METADATA=======>
+
+Often, you may want to access and peruse the underlying catalog metadata. SparkSession exposes “catalog” as a public instance that contains methods that work with the metastore (i.e data catalog). Since these methods return a Dataset, you can use Dataset API to access or view data. In this snippet, we access table names and list of databases.
+
+//fetch metadata data from the catalog
+spark.catalog.listDatabases.show(false)
+spark.catalog.listTables.show(false)
+================================================================================================================================================
+CREATING DATASETS AND DATAFRAMES=========>
+
+There are a number of ways to create DataFrames and Datasets using SparkSession APIs
+One quick way to generate a Dataset is by using the spark.range method. When learning to manipulate Dataset with its API, this quick method proves useful. For example,
+
+//create a Dataset using spark.range starting from 5 to 100, with increments of 5
+val numDS = spark.range(5, 100, 5)
+// reverse the order and display first 5 items
+numDS.orderBy(desc("id")).show(5)
+//compute descriptive stats and display them
+numDs.describe().show()
+// create a DataFrame using spark.createDataFrame from a List or Seq
+val langPercentDF = spark.createDataFrame(List(("Scala", 35), ("Python", 30), ("R", 15), ("Java", 20)))
+//rename the columns
+val lpDF = langPercentDF.withColumnRenamed("_1", "language").withColumnRenamed("_2", "percent")
+//order the DataFrame in descending order of percentage
+lpDF.orderBy(desc("percent")).show(false)
+==============================================================================================================================================
+USING SPARK SQL WITH SPARKSESSION========>
+
+Through SparkSession, you can access all of the Spark SQL functionality as you would through SQLContext. In the code sample below, we create a table against which we issue SQL queries.
+
+// Now create an SQL table and issue SQL queries against it without
+// using the sqlContext but through the SparkSession object.
+// Creates a temporary view of the DataFrame
+zipsDF.createOrReplaceTempView("zips_table")
+zipsDF.cache()
+val resultsDF = spark.sql("SELECT city, pop, state, zip FROM zips_table")
+resultsDF.show(10)
+===============================================================================================================================================
+SAVING AND READING FROM HIVE TABLE WITH SPARKSESSION========>
+
+Next, we are going to create a Hive table and issue queries against it using SparkSession object as you would with a HiveContext.
+
+//drop the table if exists to get around existing table error
+spark.sql("DROP TABLE IF EXISTS zips_hive_table")
+//save as a hive table
+spark.table("zips_table").write.saveAsTable("zips_hive_table")
+//make a similar query against the hive table 
+val resultsHiveDF = spark.sql("SELECT city, pop, state, zip FROM zips_hive_table WHERE pop > 40000")
+resultsHiveDF.show(10)
+================================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
