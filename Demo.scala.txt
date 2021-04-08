@@ -1,0 +1,7 @@
+#### scala simple program/////
+
+object Demo {
+	def main args[Array:String()]
+	val l1 = List("karishma   ","    moulali   ")
+	}
+}
