@@ -1,0 +1,7 @@
+#######Word Count program #############
+object Word_count
+{
+	def main args[Array:String()]
+	{
+	val conf = new SparkConf.setAppName("wordcount").setMaster("local("*"))
+	val sc = SparkContext(conf)
